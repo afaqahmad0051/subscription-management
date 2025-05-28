@@ -4,10 +4,13 @@ namespace App\Http\Requests;
 
 use App\Enums\SubscriptionPlan;
 use Illuminate\Validation\Rule;
+use App\Traits\FailedValidationResponse;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubscribeRequest extends FormRequest
 {
+    use FailedValidationResponse;
+
     /**
      * Determine if the user is authorized to make this request.
      */
