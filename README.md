@@ -9,7 +9,7 @@ A Laravel-based subscription management system that handles user registration, l
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/subscription-management.git
+git clone https://github.com/afaqahmad0051/subscription-management.git
 cd subscription-management
 ```
 
