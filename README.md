@@ -1,61 +1,166 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 Subscription Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel-based subscription management system that handles user registration, login, subscription plans, auto-renewal, and a scheduled renewal processor.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Getting Started
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1. Clone the Repository
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+git clone https://github.com/your-username/subscription-management.git
+cd subscription-management
+```
 
-## Learning Laravel
+### 2. Install Dependencies
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 3. Copy Environment File and Set Application Key
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+php artisan key:generate
+cp .env.example .env
+```
 
-## Laravel Sponsors
+### 4. Configure Environment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Update `.env` with your database, queue, and other environment settings:
 
-### Premium Partners
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+QUEUE_CONNECTION=database
+```
 
-## Contributing
+### 5. Run Migrations
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan migrate
+```
 
-## Code of Conduct
+### 6. Start the Development Server
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+## ⚙️ Running Background Services
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The application uses Laravel Scheduler and Queues for processing subscription renewals and reminders.
 
-## License
+### Run Queue Worker
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan queue:listen
+```
+
+### Run Laravel Scheduler
+
+```bash
+php artisan schedule:work
+```
+
+> **Note**: Ensure both processes are running continuously. For production, use Supervisor or Laravel Horizon.
+
+## 🔁 Subscription Renewal Processor
+
+This system includes a scheduled Artisan command that handles renewal of subscriptions.
+
+### Manual Execution (For Testing)
+
+```bash
+php artisan subscriptions:process
+```
+
+#### Example Output (When Renewals Exist)
+
+```
+Starting subscription processing...
+Found 1 subscriptions expiring soon
+Processing subscription ID: 2 (User: user1@example.com)
+  → Renewal job queued
+
+Processing Summary:
+- Renewals queued: 1
+- Reminders queued: 0
+```
+
+#### Example Output (No Renewals Found)
+
+```
+Starting subscription processing...
+Found 0 subscriptions expiring soon
+
+Processing Summary:
+- Renewals queued: 0
+- Reminders queued: 0
+```
+
+> 🛠 To simulate a renewal, set a subscriptions.end_date to a past date in the database.
+
+## 🛠 Artisan Commands Summary
+
+| Command                             | Description                            |
+| ----------------------------------- | -------------------------------------- |
+| `php artisan serve`                 | Run the local server                   |
+| `php artisan queue:listen`          | Start the queue listener               |
+| `php artisan schedule:work`         | Start Laravel scheduler                |
+| `php artisan subscriptions:process` | Manually trigger subscription renewals |
+
+## 🔐 API Routes
+
+### Authentication Routes
+
+```php
+Route::controller(AuthController::class)->group(function () {
+    Route::post('register', 'register');
+    Route::post('login', 'login');
+});
+```
+
+### Protected Routes (Sanctum Authentication Required)
+
+#### 👤 User Subscription Routes
+
+```php
+Route::prefix('user/subscriptions')->controller(UserSubscriptionController::class)->group(function () {
+    Route::get('', 'index');
+    Route::post('', 'subscribe');
+    Route::delete('/{subscription}/cancel', 'cancel');
+    Route::patch('/{subscription}/auto-renew', 'toggleAutoRenew');
+    Route::get('/plans', 'plans');
+});
+```
+
+#### 🛡 Admin Subscription Routes
+
+```php
+Route::prefix('subscriptions')->controller(SubscriptionController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::get('/statistics', 'statistics');
+    Route::get('/{subscription}', 'show');
+});
+```
+
+## 📌 Notes
+
+-   The subscription renewal logic checks subscriptions that are expiring within the next 24 hours.
+-   Auto-renewals are only processed if `auto_renew` is enabled on the subscription.
+-   Email reminders and job queueing are handled automatically via Laravel queues.
+-   Each login invalidates previous tokens to ensure one active session per user.
+-   Admin routes are protected by policies (`viewAny`, `view`, etc.) and require admin privileges.
+
+## 🧠 Assumptions
+
+-   Sanctum is used for API authentication.
+-   Email configuration is properly set up for sending notifications.
+-   Queue system is set to database.
